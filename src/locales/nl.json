@@ -3,6 +3,9 @@
     "title": "Welkom bij het Duvelsbroodje",
     "description": "Hier kan je allerlei lekkere broodjes kopen. We hebben ook Duvelse slaatjes, burgers, koffiekoeken, ..."
   },
+  "sandwiches": {
+    "price": "Prijs: {price} €"
+  },
   "menu": {
     "welcome": "Welkom",
     "sandwiches": "Broodjes"
