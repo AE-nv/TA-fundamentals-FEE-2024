@@ -14,6 +14,10 @@ const menuItems = ref([
     label: t('menu.welcome'),
     to: RoutePath.Root,
   },
+  {
+    label: t('menu.sandwiches'),
+    to: RoutePath.Sandwiches,
+  },
 ])
 
 function logOut() {
@@ -29,7 +33,7 @@ function logOut() {
     >
       <template #start>
         <RouterLink :to="RoutePath.Root">
-          <img alt="Mabo E&A logo" src="@/assets/logo.png" class="logo" />
+          <img src="@/assets/logo.png" class="logo" />
         </RouterLink>
       </template>
       <template #end></template>
@@ -54,8 +58,16 @@ function logOut() {
         height: 40px;
         background: black;
       }
+
+      .p-menuitem-link.router-link-active-exact {
+        background: var(--primary-100);
+      }
     }
   }
+}
+
+.link-active {
+  background: var(--blue-100);
 }
 
 .logo {

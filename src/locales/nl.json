@@ -4,6 +4,7 @@
     "description": "Hier kan je allerlei lekkere broodjes kopen. We hebben ook Duvelse slaatjes, burgers, koffiekoeken, ..."
   },
   "menu": {
-    "welcome": "Welkom"
+    "welcome": "Welkom",
+    "sandwiches": "Broodjes"
   }
 }
