@@ -1,0 +1,9 @@
+{
+  "welcome": {
+    "title": "Welkom bij het Duvelsbroodje",
+    "description": "Hier kan je allerlei lekkere broodjes kopen. We hebben ook Duvelse slaatjes, burgers, koffiekoeken, ..."
+  },
+  "menu": {
+    "welcome": "Welkom"
+  }
+}

@@ -1,0 +1,175 @@
+trigger:
+  - master
+
+parameters:
+  - name: increment
+    displayName: Version increment
+    type: string
+    default: 'dev'
+    values:
+      - dev
+      - patch
+      - minor
+      - major
+
+variables:
+  BRANCH_NAME: $[replace(variables['Build.SourceBranch'], 'refs/heads/', '')]
+  PRODUCT_REPO: 'd2t-product'
+
+resources:
+  repositories:
+    - repository: mlc-product
+      type: git
+      name: mlc/mlc-product
+      ref: dev-auto-deploy
+
+pool:
+  vmImage: ubuntu-22.04
+
+jobs:
+  - job: determine_version
+    displayName: Determine image version
+    steps:
+      - checkout: self
+      - script: |
+          . $(System.DefaultWorkingDirectory)/scripts/release-functions.sh
+          get_dev_version patch ${BUILD_SOURCEVERSION}
+          echo "##vso[task.setvariable variable=version;]$dev_version"
+        condition: eq('dev', '${{ parameters.increment }}')
+      - script: |
+          . $(System.DefaultWorkingDirectory)/scripts/release-functions.sh
+          get_next_version ${{ parameters.increment }}
+          echo "##vso[task.setvariable variable=version;]$next_version"
+        condition: ne('dev', '${{ parameters.increment }}')
+      - script: |
+          echo "##vso[task.setvariable variable=version;isoutput=true]$(version)"
+        name: version
+      - task: AzureCLI@2
+        displayName: Verify not released
+        inputs:
+          azureSubscription: 'mlc Azure subscription'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          addSpnToEnvironment: true
+          inlineScript: |
+            . $(System.DefaultWorkingDirectory)/scripts/release-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/git-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/docker-functions.sh
+            . azure-pipelines.env
+            IMAGE_REGISTRY_USER=$servicePrincipalId
+            IMAGE_REGISTRY_PASSWORD=$servicePrincipalKey
+            git_assert_tag_not_exists $(version)
+            docker_assert_tag_not_exists $IMAGE_NAME $(version)
+
+  - job: build_dev_version
+    displayName: Build dev version
+    condition: and(succeeded(), eq('dev', '${{ parameters.increment }}'))
+    dependsOn: determine_version
+    variables:
+      version: $[ dependencies.determine_version.outputs['version.version'] ]
+    steps:
+      - checkout: self
+        persistCredentials: true
+      - task: AzureCLI@2
+        name: build
+        inputs:
+          azureSubscription: 'mlc Azure subscription'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          addSpnToEnvironment: true
+          inlineScript: |
+            . $(System.DefaultWorkingDirectory)/scripts/release-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/git-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/docker-functions.sh
+            . azure-pipelines.env
+            IMAGE_REGISTRY_USER=$servicePrincipalId
+            IMAGE_REGISTRY_PASSWORD=$servicePrincipalKey
+            docker build . -t "${IMAGE_NAME}:local"
+            tags="$(version),dev"
+            docker_tag_and_publish $IMAGE_NAME "$tags"
+            git_release_tag $(version)
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+  - job: release_version
+    displayName: Promote dev version to final version
+    condition: and(succeeded(), ne('dev', '${{ parameters.increment }}'))
+    dependsOn: determine_version
+    variables:
+      version: $[ dependencies.determine_version.outputs['version.version'] ]
+    steps:
+      - checkout: self
+        persistCredentials: true
+      - task: AzureCLI@2
+        name: release
+        inputs:
+          azureSubscription: 'mlc Azure subscription'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          addSpnToEnvironment: true
+          inlineScript: |
+            . $(System.DefaultWorkingDirectory)/scripts/release-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/git-functions.sh
+            . $(System.DefaultWorkingDirectory)/scripts/docker-functions.sh
+            . azure-pipelines.env
+            IMAGE_REGISTRY_USER=$servicePrincipalId
+            IMAGE_REGISTRY_PASSWORD=$servicePrincipalKey
+            docker_login $IMAGE_REGISTRY_URL $IMAGE_REGISTRY_USER $IMAGE_REGISTRY_PASSWORD
+            docker_re_tag_dev_and_publish $IMAGE_NAME $(version)
+            git_release_tag $(version)
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+  - job: auto_deploy_dev
+    displayName: Update product repo
+    dependsOn:
+      - determine_version
+      - build_dev_version
+      - release_version
+    variables:
+      version: $[ dependencies.determine_version.outputs['version.version'] ]
+    condition: |
+      and
+      (
+        in(dependencies.determine_version.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'),
+        in(dependencies.build_dev_version.result, 'Succeeded', 'SucceededWithIssues', 'Skipped'),
+        in(dependencies.release_version.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      )
+    steps:
+      - checkout: self
+      - checkout: mlc-product
+        persistCredentials: true
+      - script: |
+          cd $(Build.SourcesDirectory)/$(Build.Repository.Name)
+          . azure-pipelines.env
+          COMMIT_MSG=`git log --pretty="format:%s" -n 1`
+          git config --global user.email "$(git log --pretty="format:%ae" -n 1)"
+          git config --global user.name "$(git log --pretty="format:%an" -n 1)"
+          cd ../$(PRODUCT_REPO)
+          git checkout -b dev-auto-deploy
+          git pull --rebase origin dev-auto-deploy
+          sed -i "s/\(${TF_VERSION_VARIABLE}\s*\)=\s*\"[0-9]*\.[0-9]*\.[0-9]*[^\n ]*\"/\1= \"$(version)\"/g" components/version-variables.tf
+          git add components/version-variables.tf
+          git commit -m "Bump ${TF_VERSION_VARIABLE}@$(version)" -m "Caused by $COMMIT_MSG"
+          git push origin dev-auto-deploy
+        displayName: Update product repo with new version
+
+  - job: clean_up_dev
+    displayName: Clean up old dev versions
+    dependsOn:
+      - build_dev_version
+    condition: succeeded()
+    steps:
+      - task: AzureCLI@2
+        name: clean_up
+        displayName: Clean up dev versions
+        inputs:
+          azureSubscription: 'mlc Azure subscription'
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            . azure-pipelines.env
+            IMAGE="${REGISTRY_IMAGE_PROJECT}/${IMAGE_NAME}"
+            az acr repository show-tags -n "$IMAGE_REGISTRY_NAME" --repository "$IMAGE" --orderby time_desc --output tsv \
+              | grep "\-dev" \
+              | tail -n +4 \
+              | xargs -I {} az acr repository delete -n "$IMAGE_REGISTRY_NAME" --image "${IMAGE}:{}" --yes
+          workingDirectory: '$(System.DefaultWorkingDirectory)'
