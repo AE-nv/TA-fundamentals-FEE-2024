@@ -1,6 +1,7 @@
 export enum RouteName {
   Welcome = 'Welcome',
   Sandwiches = 'Sandwiches',
+  SandwichDetail = 'SandwichDetail',
 }
 
 export enum RoutePath {
@@ -8,4 +9,8 @@ export enum RoutePath {
   Root = '/',
   Sandwiches = '/sandwiches',
   // nested paths: not prepended with /
+}
+
+export enum RouteParameter {
+  SandwichId = 'sandwichId',
 }
