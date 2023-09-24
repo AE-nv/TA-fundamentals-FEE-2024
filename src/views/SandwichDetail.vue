@@ -5,15 +5,23 @@ import { computed, ref } from 'vue'
 import { useSandwichesStore } from '@/stores/sandwiches'
 import { useI18n } from 'vue-i18n'
 import NumberInput from '@/components/NumberInput.vue'
+import { useShoppingBasket } from '@/stores/shoppingBasket'
+import Button from 'primevue/button'
 
 const route = useRoute()
 const { sandwiches } = useSandwichesStore()
+const { addToBasket } = useShoppingBasket()
 const { t } = useI18n()
 const nbOfSandwiches = ref<number>()
 
 const sandwichId = route.params[RouteParameter.SandwichId] as string
 
 const sandwich = computed(() => sandwiches.find((s) => `${s.id}` === sandwichId))
+
+const onAddToBasket = () => {
+  addToBasket(sandwichId, nbOfSandwiches.value)
+  nbOfSandwiches.value = null
+}
 </script>
 
 <template>
@@ -30,9 +38,14 @@ const sandwich = computed(() => sandwiches.find((s) => `${s.id}` === sandwichId)
             {{ t('sandwiches.price', { price: sandwich?.price }) }}
           </div>
           <NumberInput :label="t('sandwiches.amount')" :min="1" v-model.number="nbOfSandwiches" />
-          <div v-if="nbOfSandwiches" class="mt-2">
-            {{ t('sandwiches.selected', { number: nbOfSandwiches }, { plural: nbOfSandwiches }) }}
-          </div>
+          <Button
+            v-if="nbOfSandwiches"
+            @click="onAddToBasket"
+            class="mt-2"
+            :label="
+              t('sandwiches.addToBasket', { number: nbOfSandwiches }, { plural: nbOfSandwiches })
+            "
+          />
         </div>
       </div>
     </div>

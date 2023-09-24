@@ -3,8 +3,13 @@ import Menubar from 'primevue/menubar'
 import { RoutePath } from '@/router/routes'
 import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
+import { useShoppingBasket } from '@/stores/shoppingBasket'
+import { storeToRefs } from 'pinia'
+import Badge from 'primevue/badge'
 
 const { t } = useI18n()
+const shoppingBasket = useShoppingBasket()
+const { totalNumberInBasket } = storeToRefs(shoppingBasket)
 
 const menuItems = ref([
   {
@@ -36,7 +41,12 @@ function logOut() {
           <img src="@/assets/logo.png" class="logo" />
         </RouterLink>
       </template>
-      <template #end></template>
+      <template #end>
+        <div class="flex align-items-center">
+          <Badge v-if="totalNumberInBasket" :value="totalNumberInBasket" />
+          <i class="pi pi-shopping-cart text-4xl ml-2" />
+        </div>
+      </template>
     </Menubar>
   </div>
 </template>

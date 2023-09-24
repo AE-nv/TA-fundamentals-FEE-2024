@@ -6,7 +6,7 @@
   "sandwiches": {
     "price": "Prijs: {price} €",
     "amount": "Aantal",
-    "selected": "{number} broodje geselecteerd | {number} broodjes geselecteerd"
+    "addToBasket": "{number} broodje toevoegen | {number} broodjes toevoegen"
   },
   "menu": {
     "welcome": "Welkom",
