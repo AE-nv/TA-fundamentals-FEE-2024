@@ -4,7 +4,9 @@
     "description": "Hier kan je allerlei lekkere broodjes kopen. We hebben ook Duvelse slaatjes, burgers, koffiekoeken, ..."
   },
   "sandwiches": {
-    "price": "Prijs: {price} €"
+    "price": "Prijs: {price} €",
+    "amount": "Aantal",
+    "selected": "{number} broodje geselecteerd | {number} broodjes geselecteerd"
   },
   "menu": {
     "welcome": "Welkom",
