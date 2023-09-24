@@ -8,8 +8,8 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <div class="flex flex-wrap col-offset-3 col-6">
-    <div class="col-4 p-2" :key="sandwich.id" v-for="sandwich in sandwiches">
+  <div class="flex flex-wrap lg:col-offset-1 lg:col-10 xl:col-offset-2 xl:col-8">
+    <div class="col-6 md:col-4 p-2" :key="sandwich.id" v-for="sandwich in sandwiches">
       <Card>
         <template #title>{{ sandwich.name }}</template>
         <template #content>
