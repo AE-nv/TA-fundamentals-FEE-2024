@@ -19,13 +19,18 @@ const router = createRouter({
         },
         {
           path: RoutePath.Sandwiches,
-          name: RouteName.Sandwiches,
-          component: SandwichesOverview,
-        },
-        {
-          path: `:${RouteParameter.SandwichId}`,
-          name: RouteName.SandwichDetail,
-          component: SandwichDetail,
+          children: [
+            {
+              path: '',
+              name: RouteName.Sandwiches,
+              component: SandwichesOverview,
+            },
+            {
+              path: `:${RouteParameter.SandwichId}`,
+              name: RouteName.SandwichDetail,
+              component: SandwichDetail,
+            },
+          ],
         },
       ],
     },
