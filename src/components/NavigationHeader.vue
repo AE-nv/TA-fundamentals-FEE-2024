@@ -18,43 +18,28 @@ const menuItems = ref([
 </script>
 
 <template>
-  <!-- <div class="navigation-header">
-    <Menubar
-      :model="menuItems"
-      class="navigation-header__nav py-0 pl-0 pr-3 fixed w-full z-5 border-none border-noround"
-    >
-      <template #start>
-        <RouterLink :to="RoutePath.Root">
-          <img alt="Mabo E&A logo" src="@/assets/logo.png" class="logo p-2" />
-        </RouterLink>
-      </template>
-      <template #end></template>
-    </Menubar>
-  </div> -->
+  <Menubar :model="menuItems" class="navigation-header__nav">
+    <template #start>
+      <RouterLink :to="RoutePath.Root">
+        <img alt="Duvels Broodje logo" src="@/assets/logo.png" class="logo" />
+      </RouterLink>
+    </template>
+  </Menubar>
 </template>
 
 <style lang="scss">
-.navigation-header {
-  .navigation-header__nav {
-    &.p-menubar {
-      background: var(--primary-color);
-      height: 80px;
-      top: 0;
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-
-      .p-menuitem-separator {
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-        width: 1px;
-        height: 40px;
-        background: black;
-      }
-    }
+.navigation-header__nav {
+  &.p-menubar {
+    background: var(--primary-color);
+    height: 80px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    border: none;
   }
 }
 
 .logo {
   height: 80px;
   width: auto;
+  padding: 0.5rem;
 }
 </style>
