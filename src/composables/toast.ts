@@ -1,6 +1,5 @@
 import { useToast } from 'primevue/usetoast';
 import type { ToastServiceMethods } from 'primevue/toastservice';
-import { ToastSeverity } from 'primevue/api';
 
 let toast: ToastServiceMethods;
 
@@ -14,7 +13,7 @@ export function useSuccessToast(
   title: string = 'Success',
 ) {
   toast.add({
-    severity: ToastSeverity.SUCCESS,
+    severity: 'success',
     summary: title,
     detail: message,
     life: life,
@@ -27,7 +26,7 @@ export function useInfoToast(
   title: string = 'Info',
 ) {
   toast.add({
-    severity: ToastSeverity.INFO,
+    severity: 'info',
     summary: title,
     detail: message,
     life: life,
@@ -40,7 +39,7 @@ export function useWarnToast(
   title: string = 'Warning',
 ) {
   toast.add({
-    severity: ToastSeverity.WARN,
+    severity: 'warn',
     summary: title,
     detail: message,
     life: life,
@@ -53,7 +52,7 @@ export function useErrorToast(
   title: string = 'Error',
 ) {
   toast.add({
-    severity: ToastSeverity.ERROR,
+    severity: 'error',
     summary: title,
     detail: message,
     life: life,

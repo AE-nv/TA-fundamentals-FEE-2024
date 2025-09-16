@@ -2,9 +2,7 @@
  * This is the main scss file which is imported in main.ts.
  * It contains global css classes and imports other scss files.
  */
-@use "primeflex/primeflex.css";
-
-@import "variables";
+@use "variables";
 
 html {
   font-family: serif;
@@ -12,12 +10,10 @@ html {
 }
 
 body {
-  @extend .m-0;
+  margin: 0;
 }
 
 main {
-  @extend .px-3;
-  //@extend .py-4;
-
-  margin-top: 120px;
+  padding-left: 12px;
+  padding-right: 12px;
 }

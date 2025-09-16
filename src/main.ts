@@ -7,12 +7,11 @@ import router from './router'
 import PrimeVue from 'primevue/config'
 import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
+import Nora from '@primeuix/themes/nora'
 
 import { registerServices } from './services/service.registrator'
 import { serviceContainer } from './services/service.container'
 
-import 'primevue/resources/primevue.min.css'
-import 'primevue/resources/themes/tailwind-light/theme.css'
 import '@/assets/styles/main.scss'
 import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
@@ -28,7 +27,9 @@ loadLocaleMessages(i18n, defaultLanguage).then(() => {
   app.use(ToastService)
   app.use(createPinia())
   app.use(router)
-  app.use(PrimeVue)
+  app.use(PrimeVue, { theme: {
+    preset: Nora
+  }})
   app.use(i18n)
 
   app.directive('tooltip', Tooltip)
